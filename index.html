@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>مؤقت حلقة ارتق</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: a single centered column; header pairs the logo with the halaqa name, then one step card at a time */
+:root{
+  --bg:#f3f5fa; --surface:#ffffff; --ink:#1d2756; --muted:#66708f; --line:#dde2ee;
+  --accent:#2b3a86; --accent-soft:#e6eaf7; --done:#b4432f; --done-soft:#fbe9e5; --ok:#2f7d5b;
+  --display:"Reem Kufi", "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --body:"IBM Plex Sans Arabic", Tahoma, "Segoe UI", sans-serif;
+  color-scheme:light; /* deliberately light-only identity */
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+
+header{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.logo{background:#fff;border-radius:14px;padding:8px 12px;border:1px solid var(--line);flex:none}
+.logo img{display:block;height:84px;width:auto}
+.hname{min-width:0}
+.hname small{display:block;color:var(--muted);font-size:13px;letter-spacing:.02em}
+.hname h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,36px);margin:0;line-height:1.25;text-wrap:balance}
+.hname h1.empty{color:var(--muted);font-weight:500}
+
+.steps{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.steps span{padding:4px 12px;border-radius:999px;border:1px solid var(--line)}
+.steps span.on{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.card h2{font-family:var(--display);font-weight:500;font-size:22px;margin:0}
+.card p.hint{margin:0;color:var(--muted);font-size:14px}
+
+label{font-weight:500;font-size:14px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:6px}
+
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:10px;padding:10px 18px;border:1px solid var(--accent);background:var(--accent);color:var(--surface)}
+button.ghost{background:transparent;color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start}
+.err{color:var(--done);font-size:14px;margin:0}
+
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.names .field{flex-direction:row;align-items:center;gap:10px}
+.names .num{font-variant-numeric:tabular-nums;color:var(--muted);width:2ch;text-align:center;flex:none}
+
+/* saved halaqat */
+.halaqat{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.hq{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--surface);min-width:0}
+.hq.current{border-color:var(--accent);background:var(--accent-soft)}
+.hq h3{margin:0;font-family:var(--display);font-weight:500;font-size:19px;overflow-wrap:anywhere;line-height:1.35}
+.hq .meta{color:var(--muted);font-size:13px}
+.hq .actions{gap:6px;margin-top:4px}
+.hq .actions button{padding:6px 12px;font-size:14px}
+.hq .actions input{flex:1 1 100%;padding:8px 10px}
+button.danger{background:var(--done);border-color:var(--done);color:var(--surface)}
+button.ghost.danger{background:transparent;color:var(--done)}
+.addrow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--line)}
+.addrow .field{flex:1 1 220px;min-width:0}
+.empty-note{grid-column:1 / -1;color:var(--muted);font-size:14px;margin:0;padding:14px;border:1px dashed var(--line);border-radius:12px}
+
+/* timers: a grid of square-ish tiles so the whole halaqa fits on one screen */
+.wrap.wide{max-width:1440px;gap:16px}
+.wrap.wide .logo img{height:60px}
+.wrap.wide .card{padding:18px;gap:14px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.row{display:flex;flex-direction:column;gap:10px;padding:12px 12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);position:relative;overflow:hidden}
+.row .top{display:flex;align-items:baseline;gap:8px;min-width:0}
+.row .idx{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;flex:none;background:var(--accent-soft);border-radius:999px;min-width:1.9em;text-align:center;padding:0 6px}
+.row .who{font-weight:600;font-size:16px;overflow-wrap:anywhere;min-width:0;line-height:1.35}
+.row .mid{display:flex;flex-direction:column;align-items:center;gap:8px}
+.set{display:flex;align-items:center;gap:4px;direction:ltr}
+.set input{width:3.8em;text-align:center;padding:6px 4px;font-variant-numeric:tabular-nums}
+.set span{color:var(--muted)}
+.clock{font-family:var(--display);font-size:clamp(34px,3.4vw,46px);line-height:1.1;font-variant-numeric:tabular-nums;direction:ltr;text-align:center;letter-spacing:.02em}
+.ctrls{display:flex;gap:6px}
+.ctrls button{flex:1;padding:7px 8px;font-size:14px}
+.row .mode{margin-inline-start:auto;flex:none;padding:2px 9px;font-size:12px;font-weight:500;border-radius:999px;background:transparent;color:var(--muted);border-color:var(--line)}
+.row.up .mode{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.row.up .clock{color:var(--ok)}
+.row.up.running{border-color:var(--ok)}
+.uplabel{font-size:13px;color:var(--muted);padding-block:7px}
+.bar{position:absolute;inset-inline:0;bottom:0;height:4px;background:var(--accent-soft)}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.row.running{border-color:var(--accent)}
+.row.finished{background:var(--done-soft);border-color:var(--done)}
+.row.finished .clock{color:var(--done)}
+.row.finished .bar i{background:var(--done)}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar .q{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.toolbar .q button{padding:6px 12px;font-size:13px}
+
+@media (max-width:440px){ .list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px} .row{padding:10px 10px 14px} .clock{font-size:30px} .ctrls{flex-direction:column} }
+
+/* toast */
+.toasts{position:fixed;inset-inline:0;top:calc(16px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;z-index:10;padding-inline:16px}
+.toast{pointer-events:auto;background:var(--done);color:var(--surface);padding:12px 18px;border-radius:12px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18);display:flex;gap:14px;align-items:center;max-width:100%;animation:drop .3s ease-out}
+.toast button{background:transparent;border:1px solid currentColor;color:inherit;padding:4px 10px;font-size:13px}
+@keyframes drop{from{transform:translateY(-12px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <header>
+    <div class="logo"><img src="logo.png" alt="شعار برنامج ارتق"></div>
+    <div class="hname">
+      <small>الحلقة</small>
+      <h1 id="hName" class="empty">لم يُحدَّد اسم الحلقة بعد</h1>
+    </div>
+  </header>
+
+  <nav class="steps" aria-label="الخطوات">
+    <span id="st1">١ · الحلقات</span><span id="st2">٢ · الطلاب</span><span id="st3">٣ · المؤقتات</span>
+  </nav>
+
+  <!-- Step 1 -->
+  <section class="card" id="s1">
+    <h2>الحلقات</h2>
+    <p class="hint">تُحفظ كل حلقة بأسماء طلابها وأوقاتهم في هذا الجهاز. اختر حلقة لفتحها، أو أضف حلقة جديدة.</p>
+    <div class="halaqat" id="halaqat"></div>
+    <div class="addrow">
+      <div class="field">
+        <label for="circleName">حلقة جديدة</label>
+        <input id="circleName" placeholder="مثال: حلقة أبي بكر الصديق" maxlength="60">
+      </div>
+      <button id="saveName">إضافة الحلقة</button>
+    </div>
+    <p class="err" id="e1" hidden>اكتب اسم الحلقة أولاً ثم اضغط «إضافة الحلقة».</p>
+  </section>
+
+  <!-- Step 2 -->
+  <section class="card" id="s2" hidden>
+    <h2>أسماء الطلاب</h2>
+    <div class="field" style="max-width:240px">
+      <label for="count">عدد الطلاب</label>
+      <select id="count"></select>
+    </div>
+    <div class="names" id="names"></div>
+    <p class="err" id="e2" hidden>أكمل أسماء جميع الطلاب.</p>
+    <div class="actions">
+      <button id="next">التالي</button>
+      <button class="ghost" id="back1">الحلقات</button>
+    </div>
+  </section>
+
+  <!-- Step 3 -->
+  <section class="card" id="s3" hidden>
+    <div class="toolbar">
+      <h2>مؤقت التسميع</h2>
+      <div class="q">ضبط الكل:
+        <button class="ghost" data-all="3">٣ د</button>
+        <button class="ghost" data-all="5">٥ د</button>
+        <button class="ghost" data-all="10">١٠ د</button>
+        <button class="ghost" data-all="15">١٥ د</button>
+      </div>
+    </div>
+    <p class="hint">اكتب الدقائق والثواني لكل طالب، ثم اضغط «تشغيل». عند انتهاء الوقت يظهر تنبيه مع صوت قصير. اضغط «↓ تنازلي» في مربع أي طالب لتحويله إلى عدّ تصاعدي.</p>
+    <div class="list" id="list"></div>
+    <div class="actions">
+      <button class="ghost" id="back2">تعديل الطلاب</button>
+      <button class="ghost" id="resetAll">إعادة ضبط الكل</button>
+      <button class="ghost" id="back3">الحلقات</button>
+    </div>
+  </section>
+</div>
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const AR = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  // All halaqat live in this browser's localStorage: { current: id, halaqat: [{id, circle, count, students:[{name,min,sec,mode}]}] }
+  const KEY = 'irtaq-halaqat-v2', OLD_KEY = 'irtaq-halaqa-v1';
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  let db = { current:null, halaqat:[] };
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.halaqat)) db = d;
+    else { // carry over the single halaqa saved by the earlier version
+      const o = JSON.parse(localStorage.getItem(OLD_KEY));
+      if (o && o.circle){ const h = { id:uid(), circle:o.circle, count:o.count || 5, students:o.students || [] }; db = { current:h.id, halaqat:[h] }; }
+    }
+  } catch(e){}
+  let state = db.halaqat.find(h => h.id === db.current) || null; // the open halaqa
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){} };
+  const isReady = h => !!h && h.students.length === h.count && h.students.every(s => s && s.name);
+  const studentsLabel = n => n === 1 ? 'طالب واحد' : n === 2 ? 'طالبان' : AR(n) + (n <= 10 ? ' طلاب' : ' طالباً');
+
+  // ---------- header / steps ----------
+  function renderHeader(){
+    const h = $('hName');
+    if (state){ h.textContent = state.circle; h.classList.remove('empty'); }
+    else { h.textContent = 'لم تُختر حلقة بعد'; h.classList.add('empty'); }
+  }
+  function go(step){
+    if (step !== 3) stopTimers();
+    document.querySelector('.wrap').classList.toggle('wide', step === 3);
+    [1,2,3].forEach(i => { $('s'+i).hidden = i !== step; $('st'+i).classList.toggle('on', i === step); });
+    if (step === 1) renderHalaqat();
+    if (step === 2) renderNames();
+    if (step === 3) renderTimers();
+  }
+
+  // ---------- step 1: halaqat ----------
+  function openHalaqa(h){
+    state = h; db.current = h.id; save(); renderHeader();
+    go(isReady(h) ? 3 : 2);
+  }
+  function renderHalaqat(){
+    const box = $('halaqat'); box.innerHTML = '';
+    if (!db.halaqat.length){
+      box.innerHTML = '<p class="empty-note">لا توجد حلقات محفوظة بعد. اكتب اسم أول حلقة في الأسفل ثم اضغط «إضافة الحلقة».</p>';
+      return;
+    }
+    db.halaqat.forEach(h => {
+      const c = document.createElement('div'); c.className = 'hq' + (state && h.id === state.id ? ' current' : '');
+      const n = h.students.filter(s => s && s.name).length;
+      c.innerHTML = `<h3></h3><div class="meta"></div>
+        <div class="actions"><button class="op">فتح</button><button class="ghost rn">تعديل الاسم</button><button class="ghost danger del">حذف</button></div>`;
+      c.querySelector('h3').textContent = h.circle;
+      c.querySelector('.meta').textContent = n ? studentsLabel(n) : 'لم تُضف أسماء الطلاب بعد';
+      const a = c.querySelector('.actions');
+      c.querySelector('.op').onclick = () => openHalaqa(h);
+      c.querySelector('.rn').onclick = () => {
+        a.innerHTML = '<input class="rnin" maxlength="60" aria-label="اسم الحلقة الجديد"><button class="sv">حفظ</button><button class="ghost cx">إلغاء</button>';
+        const inp = a.querySelector('.rnin'); inp.value = h.circle; inp.focus(); inp.select();
+        const done = () => { const v = inp.value.trim(); if (v){ h.circle = v; save(); renderHeader(); } renderHalaqat(); };
+        a.querySelector('.sv').onclick = done;
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') done(); if (e.key === 'Escape') renderHalaqat(); });
+        a.querySelector('.cx').onclick = renderHalaqat;
+      };
+      c.querySelector('.del').onclick = () => {
+        a.innerHTML = '<span class="meta">تُحذف الحلقة وأسماء طلابها من هذا الجهاز.</span><button class="danger yes">نعم، احذف</button><button class="ghost cx">إلغاء</button>';
+        a.querySelector('.yes').onclick = () => {
+          db.halaqat = db.halaqat.filter(x => x !== h);
+          if (state === h){ state = null; db.current = null; }
+          save(); renderHeader(); renderHalaqat();
+        };
+        a.querySelector('.cx').onclick = renderHalaqat;
+      };
+      box.appendChild(c);
+    });
+  }
+  $('saveName').onclick = () => {
+    const v = $('circleName').value.trim();
+    $('e1').hidden = !!v;
+    if (!v) return;
+    const h = { id:uid(), circle:v, count:5, students:[] };
+    db.halaqat.push(h); $('circleName').value = '';
+    openHalaqa(h);
+  };
+  $('circleName').addEventListener('keydown', e => { if (e.key === 'Enter') $('saveName').click(); });
+
+  // ---------- step 2 ----------
+  const sel = $('count');
+  for (let i = 2; i <= 20; i++){ const o = document.createElement('option'); o.value = i; o.textContent = AR(i) + ' طلاب'; sel.appendChild(o); }
+  sel.onchange = () => { collectNames(); state.count = +sel.value; save(); renderNames(); };
+
+  function collectNames(){
+    document.querySelectorAll('#names input').forEach((inp, i) => {
+      state.students[i] = Object.assign(state.students[i] || {min:5, sec:0}, {name: inp.value.trim()});
+    });
+  }
+  function renderNames(){
+    sel.value = state.count;
+    const box = $('names'); box.innerHTML = '';
+    for (let i = 0; i < state.count; i++){
+      const st = state.students[i] || {};
+      const f = document.createElement('div'); f.className = 'field';
+      f.innerHTML = `<span class="num">${AR(i+1)}</span><input id="stu${i}" aria-label="اسم الطالب ${i+1}" placeholder="اسم الطالب" maxlength="40">`;
+      f.querySelector('input').value = st.name || '';
+      box.appendChild(f);
+    }
+  }
+  $('next').onclick = () => {
+    collectNames();
+    state.students = state.students.slice(0, state.count);
+    const ok = state.students.length === state.count && state.students.every(s => s && s.name);
+    $('e2').hidden = ok;
+    if (!ok) return;
+    save(); go(3);
+  };
+  $('back1').onclick = () => { collectNames(); save(); go(1); };
+
+  // ---------- step 3: timers ----------
+  const timers = []; // runtime per row
+  let audioCtx = null;
+  function ensureAudio(){ try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} }
+  function beep(){
+    if (!audioCtx) return;
+    try {
+      [0, .35, .7].forEach(t => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine'; o.frequency.value = 880;
+        g.gain.setValueAtTime(.0001, audioCtx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(.3, audioCtx.currentTime + t + .02);
+        g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime + t + .28);
+        o.connect(g).connect(audioCtx.destination);
+        o.start(audioCtx.currentTime + t); o.stop(audioCtx.currentTime + t + .3);
+      });
+    } catch(e){}
+  }
+  function toast(msg){
+    const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role','alert');
+    t.innerHTML = `<span></span><button>حسناً</button>`;
+    t.firstChild.textContent = msg;
+    t.querySelector('button').onclick = () => t.remove();
+    $('toasts').appendChild(t);
+    setTimeout(() => t.remove(), 8000);
+  }
+  const fmt = ms => { const s = Math.max(0, Math.ceil(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); };
+
+  function renderTimers(){
+    timers.forEach(t => t && clearInterval(t.iv));
+    timers.length = 0;
+    const list = $('list'); list.innerHTML = '';
+    state.students.forEach((s, i) => {
+      const row = document.createElement('div'); row.className = 'row';
+      row.innerHTML = `
+        <div class="top"><span class="idx">${AR(i+1)}</span><div class="who"></div>
+          <button class="mode" type="button" title="تبديل نوع المؤقت"></button></div>
+        <div class="mid">
+          <div class="clock" aria-live="off">00:00</div>
+          <div class="uplabel" hidden>يعدّ الوقت من الصفر</div>
+          <div class="set" title="دقائق : ثواني">
+            <input id="m${i}" type="number" min="0" max="180" inputmode="numeric" aria-label="الدقائق">
+            <span>:</span>
+            <input id="sc${i}" type="number" min="0" max="59" inputmode="numeric" aria-label="الثواني">
+          </div>
+        </div>
+        <div class="ctrls"><button class="go">تشغيل</button><button class="ghost rs">إعادة</button></div>
+        <div class="bar"><i></i></div>`;
+      row.querySelector('.who').textContent = s.name;
+      list.appendChild(row);
+      const m = row.querySelector('#m'+i), sc = row.querySelector('#sc'+i);
+      m.value = s.min ?? 5; sc.value = s.sec ?? 0;
+      const t = { row, m, sc, clock: row.querySelector('.clock'), bar: row.querySelector('.bar i'), go: row.querySelector('.go'),
+                  modeBtn: row.querySelector('.mode'), set: row.querySelector('.set'), uplabel: row.querySelector('.uplabel'),
+                  mode: s.mode === 'up' ? 'up' : 'down', total:0, left:0, end:0, start:0, elapsed:0, iv:null, status:'idle' };
+      timers[i] = t;
+      t.modeBtn.onclick = () => {
+        if (t.status === 'running') return;
+        t.mode = t.mode === 'up' ? 'down' : 'up'; s.mode = t.mode; save();
+        reset(t, true);
+      };
+      const setFromInputs = () => {
+        const mm = Math.min(180, Math.max(0, parseInt(m.value) || 0)), ss = Math.min(59, Math.max(0, parseInt(sc.value) || 0));
+        s.min = mm; s.sec = ss; save();
+        if (t.status === 'idle' || t.status === 'finished'){ t.total = t.left = (mm*60 + ss) * 1000; reset(t, false); }
+      };
+      m.oninput = sc.oninput = setFromInputs;
+      t.go.onclick = () => { ensureAudio(); toggle(t, i); };
+      row.querySelector('.rs').onclick = () => reset(t, true);
+      setFromInputs();
+    });
+  }
+  const fmtUp = ms => { const s = Math.max(0, Math.floor(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); };
+  function paint(t){
+    if (t.mode === 'up'){ t.clock.textContent = fmtUp(t.elapsed); t.bar.style.width = '0%'; return; }
+    t.clock.textContent = fmt(t.left);
+    t.bar.style.width = t.total ? (100 * (1 - t.left / t.total)) + '%' : '0%';
+  }
+  function reset(t, fromInputs){
+    clearInterval(t.iv); t.iv = null;
+    if (fromInputs){ t.total = ((parseInt(t.m.value)||0)*60 + Math.min(59, parseInt(t.sc.value)||0)) * 1000; }
+    t.left = t.total; t.elapsed = 0; t.status = 'idle';
+    const up = t.mode === 'up';
+    t.row.classList.remove('running','finished');
+    t.row.classList.toggle('up', up);
+    t.set.hidden = up; t.uplabel.hidden = !up;
+    t.modeBtn.textContent = up ? '↑ تصاعدي' : '↓ تنازلي';
+    t.modeBtn.disabled = false;
+    t.go.textContent = 'تشغيل'; t.go.disabled = false;
+    t.m.disabled = t.sc.disabled = false;
+    paint(t);
+  }
+  function toggle(t, i){
+    if (t.status === 'running'){ // pause
+      clearInterval(t.iv); t.iv = null;
+      if (t.mode === 'up') t.elapsed = Date.now() - t.start; else t.left = Math.max(0, t.end - Date.now());
+      t.status = 'paused'; t.go.textContent = 'متابعة'; t.row.classList.remove('running'); paint(t); return;
+    }
+    if (t.mode === 'up'){
+      t.status = 'running'; t.start = Date.now() - t.elapsed;
+      t.row.classList.add('running'); t.go.textContent = 'إيقاف مؤقت'; t.modeBtn.disabled = true;
+      t.iv = setInterval(() => { t.elapsed = Date.now() - t.start; paint(t); }, 250);
+      paint(t); return;
+    }
+    if (t.status === 'finished') reset(t, true);
+    if (t.left <= 0){ toast('حدّد وقتاً أكبر من صفر للطالب ' + state.students[i].name); return; }
+    t.status = 'running'; t.end = Date.now() + t.left;
+    t.row.classList.add('running'); t.go.textContent = 'إيقاف مؤقت';
+    t.m.disabled = t.sc.disabled = true; t.modeBtn.disabled = true;
+    t.iv = setInterval(() => {
+      t.left = t.end - Date.now();
+      if (t.left <= 0){
+        t.left = 0; clearInterval(t.iv); t.iv = null; t.status = 'finished';
+        t.row.classList.remove('running'); t.row.classList.add('finished');
+        t.go.textContent = 'تشغيل من جديد'; t.m.disabled = t.sc.disabled = false; t.modeBtn.disabled = false;
+        toast('انتهى الوقت المحدد للطالب: ' + state.students[i].name);
+        beep();
+      }
+      paint(t);
+    }, 200);
+    paint(t);
+  }
+  document.querySelectorAll('[data-all]').forEach(b => b.onclick = () => {
+    const v = +b.dataset.all;
+    timers.forEach((t, i) => { if (t.status === 'running' || t.mode === 'up') return; t.m.value = v; t.sc.value = 0; state.students[i].min = v; state.students[i].sec = 0; reset(t, true); });
+    save();
+  });
+  $('resetAll').onclick = () => timers.forEach(t => reset(t, true));
+  function stopTimers(){ timers.forEach(t => t && clearInterval(t.iv)); }
+  $('back2').onclick = () => go(2);
+  $('back3').onclick = () => go(1);
+
+  // ---------- boot ----------
+  renderHeader();
+  go(!state ? 1 : isReady(state) ? 3 : 2);
+})();
+</script>
+
+</body>
+</html>
