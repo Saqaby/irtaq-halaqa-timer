@@ -13,7 +13,8 @@
 /* Layout: a single centered column; header pairs the logo with the halaqa name, then one step card at a time */
 :root{
   --bg:#f3f5fa; --surface:#ffffff; --ink:#1d2756; --muted:#66708f; --line:#dde2ee;
-  --accent:#2b3a86; --accent-soft:#e6eaf7; --done:#b4432f; --done-soft:#fbe9e5; --ok:#2f7d5b;
+  --accent:#2b3a86; --accent-soft:#e6eaf7; --done:#b4432f; --done-soft:#fbe9e5; --ok:#2f7d5b; --ok-soft:#e6f2ec;
+  --frost:#edf1f8; --frost-ink:#7f93bb;
   --display:"Reem Kufi", "IBM Plex Sans Arabic", Tahoma, sans-serif;
   --body:"IBM Plex Sans Arabic", Tahoma, "Segoe UI", sans-serif;
   color-scheme:light; /* deliberately light-only identity */
@@ -76,9 +77,31 @@ button.ghost.danger{background:transparent;color:var(--done)}
 .wrap.wide .card{padding:18px;gap:14px}
 .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
 .row{display:flex;flex-direction:column;gap:10px;padding:12px 12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);position:relative;overflow:hidden}
-.row .top{display:flex;align-items:baseline;gap:8px;min-width:0}
-.row .idx{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;flex:none;background:var(--accent-soft);border-radius:999px;min-width:1.9em;text-align:center;padding:0 6px}
+.row .top{display:flex;align-items:center;gap:6px;min-width:0}
 .row .who{font-weight:600;font-size:16px;overflow-wrap:anywhere;min-width:0;line-height:1.35}
+.row .who small{display:block;font-weight:500;font-size:12px;color:var(--accent)}
+.row.group{border-width:2px;border-color:var(--accent-soft)}
+.grip{flex:none;cursor:grab;touch-action:none;user-select:none;color:var(--muted);font-size:20px;line-height:1;padding:4px 2px}
+.grip:hover{color:var(--accent)}
+.fin{margin-inline-start:auto;flex:none;width:32px;height:32px;padding:0;border-radius:999px;background:transparent;color:var(--ok);border-color:var(--ok);font-size:16px;line-height:1}
+.fin:hover{background:var(--ok);color:var(--surface)}
+.opts{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;min-height:36px}
+.row.dragging{opacity:.35}
+.drop-over{outline:3px dashed var(--accent);outline-offset:3px}
+.drag-ghost{position:fixed;left:0;top:0;z-index:20;pointer-events:none;margin:0;opacity:.92;box-shadow:0 14px 32px rgba(29,39,86,.25)}
+
+/* frozen students: only the name, out of the way at the bottom */
+.frozen-wrap{display:flex;flex-direction:column;gap:10px;padding-top:12px;border-top:1px dashed var(--line)}
+.sub{margin:0;font-size:15px;font-weight:600;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+.sub span{font-weight:400;font-size:13px}
+.frozen{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.frz{display:flex;align-items:center;gap:8px;text-align:start;min-width:0;padding:9px 12px;border-radius:12px;font-weight:500;background:var(--frost);color:var(--muted);border:1px dashed var(--frost-ink)}
+.frz .ic{color:var(--frost-ink);flex:none}
+.frz .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.frz .tm{flex:none;font-size:13px;direction:ltr;font-variant-numeric:tabular-nums}
+.frz:hover{background:var(--surface);color:var(--ink);border-color:var(--accent)}
+.frz.did{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-soft)}
+.frz.did .ic{color:var(--ok)}
 .row .mid{display:flex;flex-direction:column;align-items:center;gap:8px}
 .set{display:flex;align-items:center;gap:4px;direction:ltr}
 .set input{width:3.8em;text-align:center;padding:6px 4px;font-variant-numeric:tabular-nums}
@@ -86,7 +109,7 @@ button.ghost.danger{background:transparent;color:var(--done)}
 .clock{font-family:var(--display);font-size:clamp(34px,3.4vw,46px);line-height:1.1;font-variant-numeric:tabular-nums;direction:ltr;text-align:center;letter-spacing:.02em}
 .ctrls{display:flex;gap:6px}
 .ctrls button{flex:1;padding:7px 8px;font-size:14px}
-.row .mode{margin-inline-start:auto;flex:none;padding:2px 9px;font-size:12px;font-weight:500;border-radius:999px;background:transparent;color:var(--muted);border-color:var(--line)}
+.row .mode{flex:none;padding:2px 9px;font-size:12px;font-weight:500;border-radius:999px;background:transparent;color:var(--muted);border-color:var(--line)}
 .row.up .mode{background:var(--ok);border-color:var(--ok);color:var(--surface)}
 .row.up .clock{color:var(--ok)}
 .row.up.running{border-color:var(--ok)}
@@ -168,8 +191,12 @@ button.ghost.danger{background:transparent;color:var(--done)}
         <button class="ghost" data-all="15">١٥ د</button>
       </div>
     </div>
-    <p class="hint">اكتب الدقائق والثواني لكل طالب، ثم اضغط «تشغيل». عند انتهاء الوقت يظهر تنبيه مع صوت قصير. اضغط «↓ تنازلي» في مربع أي طالب لتحويله إلى عدّ تصاعدي.</p>
+    <p class="hint">يبدأ كل يوم جديد والبطاقات مجمّدة. اضغط على اسم الطالب لتفعيل بطاقته ثم «تشغيل». عندما ينجز الطالب اضغط ✓ فتُجمَّد بطاقته وتنتقل إلى الأسفل. لتسميع طالبين معاً اسحب بطاقة أحدهما من ⠿ وأفلتها على بطاقة الآخر. أزرار «ضبط الكل» للمؤقتات التنازلية.</p>
     <div class="list" id="list"></div>
+    <div class="frozen-wrap" id="frozenWrap">
+      <h3 class="sub">بطاقات مجمّدة <span>اضغط على اسم الطالب لتفعيل بطاقته</span></h3>
+      <div class="frozen" id="frozen"></div>
+    </div>
     <div class="actions">
       <button class="ghost" id="back2">تعديل الطلاب</button>
       <button class="ghost" id="resetAll">إعادة ضبط الكل</button>
@@ -287,17 +314,18 @@ button.ghost.danger{background:transparent;color:var(--done)}
     }
   }
   $('next').onclick = () => {
+    const before = JSON.stringify(state.students.map(s => s && s.name));
     collectNames();
     state.students = state.students.slice(0, state.count);
     const ok = state.students.length === state.count && state.students.every(s => s && s.name);
     $('e2').hidden = ok;
     if (!ok) return;
+    if (JSON.stringify(state.students.map(s => s.name)) !== before) state.today = null; // list changed: start the day fresh
     save(); go(3);
   };
   $('back1').onclick = () => { collectNames(); save(); go(1); };
 
   // ---------- step 3: timers ----------
-  const timers = []; // runtime per row
   let audioCtx = null;
   function ensureAudio(){ try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){} }
   function beep(){
@@ -323,110 +351,250 @@ button.ghost.danger{background:transparent;color:var(--done)}
     setTimeout(() => t.remove(), 8000);
   }
   const fmt = ms => { const s = Math.max(0, Math.ceil(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); };
+  const fmtUp = ms => { const s = Math.max(0, Math.floor(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); };
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+  const joinNames = ms => ms.map(k => state.students[k].name).join(' و ');
+  const forWhom = ms => ms.length === 1 ? 'للطالب' : ms.length === 2 ? 'للطالبين' : 'للطلاب';
+
+  // Daily state, saved with the halaqa: state.today = { date, units:[[i],[j,k]], done:[{i, ms}] }
+  // units are the active cards in activation order (a unit with 2+ members recites together on one timer);
+  // every student not in a unit is frozen. A new calendar day starts with everyone frozen.
+  function ensureToday(){
+    const d = todayStr();
+    if (!state.today || state.today.date !== d){ state.today = { date:d, units:[], done:[] }; save(); }
+    return state.today;
+  }
+  const keyOf = ms => ms.join('-');
+  const rt = new Map(); // unit key -> live timer, kept across re-renders so re-sorting never stops a running timer
+  function runtime(members){
+    const k = keyOf(members);
+    if (!rt.has(k)){
+      const s = state.students[members[0]];
+      const total = ((s.min ?? 5) * 60 + (s.sec ?? 0)) * 1000;
+      rt.set(k, { members, mode: s.mode === 'down' ? 'down' : 'up', total, left:total, end:0, start:0, elapsed:0, iv:null, status:'idle', el:null });
+    }
+    return rt.get(k);
+  }
+  function dropRuntime(members){ const k = keyOf(members), t = rt.get(k); if (t){ clearInterval(t.iv); rt.delete(k); } return t; }
+  function stopTimers(){ rt.forEach(t => clearInterval(t.iv)); rt.clear(); }
+  const usedMs = t => t.mode === 'up'
+    ? (t.status === 'running' ? Date.now() - t.start : t.elapsed)
+    : t.total - (t.status === 'running' ? Math.max(0, t.end - Date.now()) : t.left);
 
   function renderTimers(){
-    timers.forEach(t => t && clearInterval(t.iv));
-    timers.length = 0;
+    const today = ensureToday();
+    const live = new Set(today.units.map(keyOf));
+    rt.forEach((t, k) => { if (!live.has(k)){ clearInterval(t.iv); rt.delete(k); } });
+
     const list = $('list'); list.innerHTML = '';
-    state.students.forEach((s, i) => {
-      const row = document.createElement('div'); row.className = 'row';
-      row.innerHTML = `
-        <div class="top"><span class="idx">${AR(i+1)}</span><div class="who"></div>
-          <button class="mode" type="button" title="تبديل نوع المؤقت"></button></div>
-        <div class="mid">
-          <div class="clock" aria-live="off">00:00</div>
-          <div class="uplabel" hidden>يعدّ الوقت من الصفر</div>
+    today.units.forEach(ms => list.appendChild(unitCard(ms)));
+    if (!today.units.length) list.innerHTML = '<p class="empty-note">لا توجد بطاقات مفعّلة الآن. اضغط على اسم أي طالب في الأسفل لتفعيل بطاقته.</p>';
+
+    const active = new Set(today.units.flat());
+    const doneBy = new Map(today.done.map(d => [d.i, d]));
+    const waiting = state.students.map((s, i) => i).filter(i => !active.has(i) && !doneBy.has(i));
+    const finished = today.done.map(d => d.i).filter(i => !active.has(i));
+    const box = $('frozen'); box.innerHTML = '';
+    [...waiting, ...finished].forEach(i => box.appendChild(frozenCard(i, doneBy.get(i))));
+    $('frozenWrap').hidden = !(waiting.length + finished.length);
+  }
+
+  function frozenCard(i, d){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'frz' + (d ? ' did' : ''); b.dataset.drop = 'f' + i;
+    b.innerHTML = `<span class="ic" aria-hidden="true">${d ? '✓' : '❄'}</span><span class="nm"></span>${d ? `<span class="tm">${fmtUp(d.ms)}</span>` : ''}`;
+    b.querySelector('.nm').textContent = state.students[i].name;
+    b.title = d ? 'أنجز اليوم. اضغط لتفعيل بطاقته من جديد' : 'اضغط لتفعيل بطاقة الطالب';
+    b.onclick = () => activate(i);
+    return b;
+  }
+  function activate(i){
+    const today = ensureToday();
+    today.done = today.done.filter(d => d.i !== i);
+    if (!today.units.some(u => u.includes(i))) today.units.push([i]);
+    save(); renderTimers();
+  }
+  function finish(members){
+    const today = ensureToday(), t = rt.get(keyOf(members));
+    const ms = t ? Math.max(0, usedMs(t)) : 0;
+    dropRuntime(members);
+    today.units = today.units.filter(u => keyOf(u) !== keyOf(members));
+    members.forEach(i => { today.done = today.done.filter(d => d.i !== i); today.done.push({ i, ms }); });
+    save(); renderTimers();
+  }
+  function split(members){
+    const today = ensureToday();
+    dropRuntime(members);
+    const pos = today.units.findIndex(u => keyOf(u) === keyOf(members));
+    if (pos > -1) today.units.splice(pos, 1, ...members.map(i => [i]));
+    save(); renderTimers();
+  }
+  // Drop one card on another: both share the target's timer from now on.
+  function merge(src, dropKey){
+    const today = ensureToday();
+    let tgt;
+    if (dropKey.startsWith('f')){
+      const i = +dropKey.slice(1);
+      today.done = today.done.filter(d => d.i !== i);
+      tgt = [i]; today.units.push(tgt);
+    } else tgt = today.units.find(u => keyOf(u) === dropKey);
+    if (!tgt || keyOf(tgt) === keyOf(src)) return;
+    dropRuntime(src);
+    const merged = [...tgt, ...src];
+    const tt = rt.get(keyOf(tgt));
+    if (tt){ rt.delete(keyOf(tgt)); tt.members = merged; rt.set(keyOf(merged), tt); }
+    today.units.splice(today.units.indexOf(tgt), 1, merged);
+    today.units = today.units.filter(u => keyOf(u) !== keyOf(src));
+    save(); renderTimers();
+  }
+
+  function unitCard(members){
+    const t = runtime(members), group = members.length > 1, k = keyOf(members);
+    const row = document.createElement('div'); row.className = 'row' + (group ? ' group' : ''); row.dataset.drop = k;
+    row.innerHTML = `
+      <div class="top">
+        <span class="grip" title="اسحب البطاقة وأفلتها على بطاقة طالب آخر ليسمّعا معاً بمؤقت واحد">⠿</span>
+        <div class="who"></div>
+        <button class="fin" type="button" title="أنجز: تجميد البطاقة ونقلها إلى الأسفل" aria-label="أنجز وتجميد البطاقة">✓</button>
+      </div>
+      <div class="mid">
+        <div class="clock">00:00</div>
+        <div class="opts">
+          <button class="mode" type="button" title="تبديل نوع المؤقت"></button>
           <div class="set" title="دقائق : ثواني">
-            <input id="m${i}" type="number" min="0" max="180" inputmode="numeric" aria-label="الدقائق">
+            <input id="m-${k}" class="mm" type="number" min="0" max="180" inputmode="numeric" aria-label="الدقائق">
             <span>:</span>
-            <input id="sc${i}" type="number" min="0" max="59" inputmode="numeric" aria-label="الثواني">
+            <input id="s-${k}" class="ss" type="number" min="0" max="59" inputmode="numeric" aria-label="الثواني">
           </div>
         </div>
-        <div class="ctrls"><button class="go">تشغيل</button><button class="ghost rs">إعادة</button></div>
-        <div class="bar"><i></i></div>`;
-      row.querySelector('.who').textContent = s.name;
-      list.appendChild(row);
-      const m = row.querySelector('#m'+i), sc = row.querySelector('#sc'+i);
-      m.value = s.min ?? 5; sc.value = s.sec ?? 0;
-      const t = { row, m, sc, clock: row.querySelector('.clock'), bar: row.querySelector('.bar i'), go: row.querySelector('.go'),
-                  modeBtn: row.querySelector('.mode'), set: row.querySelector('.set'), uplabel: row.querySelector('.uplabel'),
-                  mode: s.mode === 'up' ? 'up' : 'down', total:0, left:0, end:0, start:0, elapsed:0, iv:null, status:'idle' };
-      timers[i] = t;
-      t.modeBtn.onclick = () => {
-        if (t.status === 'running') return;
-        t.mode = t.mode === 'up' ? 'down' : 'up'; s.mode = t.mode; save();
-        reset(t, true);
-      };
-      const setFromInputs = () => {
-        const mm = Math.min(180, Math.max(0, parseInt(m.value) || 0)), ss = Math.min(59, Math.max(0, parseInt(sc.value) || 0));
-        s.min = mm; s.sec = ss; save();
-        if (t.status === 'idle' || t.status === 'finished'){ t.total = t.left = (mm*60 + ss) * 1000; reset(t, false); }
-      };
-      m.oninput = sc.oninput = setFromInputs;
-      t.go.onclick = () => { ensureAudio(); toggle(t, i); };
-      row.querySelector('.rs').onclick = () => reset(t, true);
-      setFromInputs();
-    });
+      </div>
+      <div class="ctrls"><button class="go" type="button"></button><button class="ghost rs" type="button">إعادة</button>${group ? '<button class="ghost sp" type="button" title="فصل الطلاب إلى بطاقات منفصلة">فصل</button>' : ''}</div>
+      <div class="bar"><i></i></div>`;
+    const who = row.querySelector('.who'); who.textContent = joinNames(members);
+    if (group){ const sm = document.createElement('small'); sm.textContent = 'تسميع مشترك'; who.appendChild(sm); }
+    const q = s => row.querySelector(s);
+    t.el = { row, clock:q('.clock'), bar:q('.bar i'), go:q('.go'), mode:q('.mode'), set:q('.set'), mm:q('.mm'), ss:q('.ss') };
+    t.el.mm.value = Math.floor(t.total / 60000); t.el.ss.value = Math.floor(t.total / 1000) % 60;
+    t.el.mm.oninput = t.el.ss.oninput = () => {
+      const m = clamp(parseInt(t.el.mm.value) || 0, 0, 180), s = clamp(parseInt(t.el.ss.value) || 0, 0, 59);
+      t.members.forEach(i => { state.students[i].min = m; state.students[i].sec = s; }); save();
+      t.total = (m * 60 + s) * 1000;
+      if (t.status === 'idle' || t.status === 'finished') reset(t);
+    };
+    t.el.mode.onclick = () => {
+      if (t.status === 'running' || t.status === 'paused') return;
+      t.mode = t.mode === 'up' ? 'down' : 'up';
+      t.members.forEach(i => { state.students[i].mode = t.mode; }); save();
+      reset(t);
+    };
+    t.el.go.onclick = () => { ensureAudio(); toggle(t); };
+    q('.rs').onclick = () => reset(t);
+    q('.fin').onclick = () => finish(t.members);
+    if (group) q('.sp').onclick = () => split(t.members);
+    q('.grip').addEventListener('pointerdown', e => startDrag(e, row, t));
+    applyState(t);
+    return row;
   }
-  const fmtUp = ms => { const s = Math.max(0, Math.floor(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); };
-  function paint(t){
-    if (t.mode === 'up'){ t.clock.textContent = fmtUp(t.elapsed); t.bar.style.width = '0%'; return; }
-    t.clock.textContent = fmt(t.left);
-    t.bar.style.width = t.total ? (100 * (1 - t.left / t.total)) + '%' : '0%';
-  }
-  function reset(t, fromInputs){
-    clearInterval(t.iv); t.iv = null;
-    if (fromInputs){ t.total = ((parseInt(t.m.value)||0)*60 + Math.min(59, parseInt(t.sc.value)||0)) * 1000; }
-    t.left = t.total; t.elapsed = 0; t.status = 'idle';
-    const up = t.mode === 'up';
-    t.row.classList.remove('running','finished');
-    t.row.classList.toggle('up', up);
-    t.set.hidden = up; t.uplabel.hidden = !up;
-    t.modeBtn.textContent = up ? '↑ تصاعدي' : '↓ تنازلي';
-    t.modeBtn.disabled = false;
-    t.go.textContent = 'تشغيل'; t.go.disabled = false;
-    t.m.disabled = t.sc.disabled = false;
+
+  function applyState(t){
+    const e = t.el; if (!e) return;
+    const up = t.mode === 'up', busy = t.status === 'running' || t.status === 'paused';
+    e.row.classList.toggle('up', up);
+    e.row.classList.toggle('running', t.status === 'running');
+    e.row.classList.toggle('finished', t.status === 'finished');
+    e.set.hidden = up;
+    e.mode.textContent = up ? '↑ تصاعدي' : '↓ تنازلي';
+    e.mode.disabled = busy; e.mm.disabled = e.ss.disabled = busy;
+    e.go.textContent = { idle:'تشغيل', running:'إيقاف', paused:'متابعة', finished:'تشغيل من جديد' }[t.status];
     paint(t);
   }
-  function toggle(t, i){
+  function paint(t){
+    const e = t.el; if (!e) return;
+    if (t.mode === 'up'){ e.clock.textContent = fmtUp(t.elapsed); e.bar.style.width = '0%'; return; }
+    e.clock.textContent = fmt(t.left);
+    e.bar.style.width = t.total ? (100 * (1 - t.left / t.total)) + '%' : '0%';
+  }
+  function reset(t){
+    clearInterval(t.iv); t.iv = null;
+    t.left = t.total; t.elapsed = 0; t.status = 'idle';
+    applyState(t);
+  }
+  function toggle(t){
     if (t.status === 'running'){ // pause
       clearInterval(t.iv); t.iv = null;
       if (t.mode === 'up') t.elapsed = Date.now() - t.start; else t.left = Math.max(0, t.end - Date.now());
-      t.status = 'paused'; t.go.textContent = 'متابعة'; t.row.classList.remove('running'); paint(t); return;
+      t.status = 'paused'; applyState(t); return;
     }
     if (t.mode === 'up'){
-      t.status = 'running'; t.start = Date.now() - t.elapsed;
-      t.row.classList.add('running'); t.go.textContent = 'إيقاف مؤقت'; t.modeBtn.disabled = true;
+      t.start = Date.now() - t.elapsed; t.status = 'running';
       t.iv = setInterval(() => { t.elapsed = Date.now() - t.start; paint(t); }, 250);
-      paint(t); return;
+      applyState(t); return;
     }
-    if (t.status === 'finished') reset(t, true);
-    if (t.left <= 0){ toast('حدّد وقتاً أكبر من صفر للطالب ' + state.students[i].name); return; }
-    t.status = 'running'; t.end = Date.now() + t.left;
-    t.row.classList.add('running'); t.go.textContent = 'إيقاف مؤقت';
-    t.m.disabled = t.sc.disabled = true; t.modeBtn.disabled = true;
+    if (t.status === 'finished') t.left = t.total;
+    if (t.left <= 0){ toast('حدّد وقتاً أكبر من صفر ' + forWhom(t.members) + ' ' + joinNames(t.members)); return; }
+    t.end = Date.now() + t.left; t.status = 'running';
     t.iv = setInterval(() => {
       t.left = t.end - Date.now();
       if (t.left <= 0){
         t.left = 0; clearInterval(t.iv); t.iv = null; t.status = 'finished';
-        t.row.classList.remove('running'); t.row.classList.add('finished');
-        t.go.textContent = 'تشغيل من جديد'; t.m.disabled = t.sc.disabled = false; t.modeBtn.disabled = false;
-        toast('انتهى الوقت المحدد للطالب: ' + state.students[i].name);
-        beep();
+        applyState(t);
+        toast('انتهى الوقت المحدد ' + forWhom(t.members) + ': ' + joinNames(t.members));
+        beep(); return;
       }
       paint(t);
     }, 200);
-    paint(t);
+    applyState(t);
   }
+
+  // Drag a card by its grip (mouse or touch) and drop it on another card to merge them.
+  function startDrag(e, row, t){
+    if (e.button > 0) return;
+    e.preventDefault();
+    const r = row.getBoundingClientRect(), ox = e.clientX - r.left, oy = e.clientY - r.top;
+    const ghost = row.cloneNode(true);
+    ghost.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+    ghost.classList.add('drag-ghost'); ghost.dir = 'rtl';
+    ghost.style.width = r.width + 'px'; ghost.style.height = r.height + 'px';
+    document.body.appendChild(ghost); row.classList.add('dragging');
+    let over = null;
+    const move = ev => {
+      ghost.style.transform = `translate(${ev.clientX - ox}px, ${ev.clientY - oy}px)`;
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      const hit = el && el.closest('[data-drop]');
+      const next = hit && hit !== row ? hit : null;
+      if (next !== over){ if (over) over.classList.remove('drop-over'); over = next; if (over) over.classList.add('drop-over'); }
+    };
+    const end = ev => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end);
+      ghost.remove(); row.classList.remove('dragging');
+      if (over){ over.classList.remove('drop-over'); if (ev.type === 'pointerup') merge(t.members, over.dataset.drop); }
+    };
+    move(e);
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+  }
+
   document.querySelectorAll('[data-all]').forEach(b => b.onclick = () => {
     const v = +b.dataset.all;
-    timers.forEach((t, i) => { if (t.status === 'running' || t.mode === 'up') return; t.m.value = v; t.sc.value = 0; state.students[i].min = v; state.students[i].sec = 0; reset(t, true); });
+    rt.forEach(t => {
+      if (t.mode === 'up' || t.status === 'running' || t.status === 'paused') return;
+      t.total = v * 60000; t.members.forEach(i => { state.students[i].min = v; state.students[i].sec = 0; });
+      if (t.el){ t.el.mm.value = v; t.el.ss.value = 0; }
+      reset(t);
+    });
     save();
   });
-  $('resetAll').onclick = () => timers.forEach(t => reset(t, true));
-  function stopTimers(){ timers.forEach(t => t && clearInterval(t.iv)); }
+  $('resetAll').onclick = () => rt.forEach(reset);
   $('back2').onclick = () => go(2);
   $('back3').onclick = () => go(1);
+  // a new day while the page stays open: freeze everyone again once nothing is running
+  const rollover = () => {
+    if (!state || $('s3').hidden || !state.today || state.today.date === todayStr()) return;
+    if ([...rt.values()].some(t => t.status === 'running')) return;
+    renderTimers();
+  };
+  setInterval(rollover, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) rollover(); });
 
   // ---------- boot ----------
   renderHeader();
